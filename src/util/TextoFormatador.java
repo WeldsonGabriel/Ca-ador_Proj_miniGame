@@ -58,4 +58,12 @@ public class TextoFormatador {
         }
         System.out.println();
     }
+
+    public static boolean azul(String s) {
+        return false;
+    }
+
+    public static boolean cabecalhoFormat(String titulo) {
+        return false;
+    }
 }

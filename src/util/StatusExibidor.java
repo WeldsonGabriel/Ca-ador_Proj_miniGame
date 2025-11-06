@@ -3,50 +3,121 @@ package util;
 import model.personagem.Cacador;
 import model.animal.Animal;
 import model.ambiente.Ambiente;
-import util.TextoFormatador;
 
 public class StatusExibidor {
 
     public static void mostrarCabecalho(String titulo) {
         TextoFormatador.linha();
-        System.out.println(TextoFormatador.azul("⚔️  " + titulo.toUpperCase()));
+        System.out.println(TextoFormatador.cabecalhoFormat(titulo)); // usa método de cabecalho se disponível
         TextoFormatador.linha();
     }
 
-    public static void mostrarStatusCacador(Cacador c) {
-        TextoFormatador.info("🎯 Status do Caçador:");
-        System.out.printf("  🧍 Nome: %s%n", c.getNome());
-        System.out.printf("  💪 Força: %d | ⚡ Velocidade: %d | 🧠 Inteligência: %d%n",
-                c.getForca(), c.getVelocidade(), c.getInteligencia());
-        System.out.printf("  ⭐ Nível: %d | 🔸 XP: %d/%d%n",
-                c.getNivel(), c.getXpAtual(), c.getXpProximoNivel());
-        System.out.println("  🎒 Itens: " + (c.getItens().isEmpty() ? "Nenhum" : c.getItens()));
+    // ==============================
+    // Exibição do Caçador
+    // ==============================
+    public static void exibirStatusCacador(Cacador c) {
+        TextoFormatador.info("🎯 STATUS DO CAÇADOR:");
+        try {
+            System.out.printf("  🧍 Nome: %s%n", c.getNome());
+        } catch (Exception e) {
+            System.out.println("  🧍 Nome: Desconhecido");
+        }
+
+        try {
+            System.out.printf("  💪 Força: %d | ⚡ Agilidade: %d | 🧠 Inteligência: %d%n",
+                    c.getForca(), c.getAgilidade(), c.getInteligencia());
+        } catch (Exception e) {
+            TextoFormatador.alerta("⚠️ Atributos do caçador não encontrados.");
+        }
+
+        try {
+            System.out.printf("  ❤️ Vida: %d/%d%n", c.getVidaAtual(), c.getVidaMaxima());
+        } catch (Exception ignored) {}
+
+        try {
+            System.out.printf("  ⭐ Nível: %d | 🔸 XP: %.0f / %.0f%n",
+                    c.getNivel(), c.getExperiencia(), c.getExperienciaNecessaria());
+        } catch (Exception ignored) {}
+
+        try {
+            var itens = c.getItens();
+            System.out.println("  🎒 Itens: " + (itens == null || itens.isEmpty() ? "Nenhum" : itens));
+        } catch (Exception e) {
+            System.out.println("  🎒 Itens: Indisponível");
+        }
+
         TextoFormatador.linha();
     }
 
-    public static void mostrarAmbiente(Ambiente a) {
-        TextoFormatador.info("🌍 Ambiente Atual:");
-        System.out.printf("  %s (%s)%n", a.getNome(), a.getEfeito());
+    // ==============================
+    // Exibição do Animal
+    // ==============================
+    public static void exibirStatusAnimal(Animal a, Ambiente ambiente) {
+        TextoFormatador.info("🐾 ANIMAL ENCONTRADO:");
+        // usa getNome() e getIdade() conforme sua implementação atual de Animal
+        try {
+            System.out.printf("  🐅 Nome: %s | Idade: %s | Nível: %d%n",
+                    a.getNome(), a.getIdade(), a.getNivel());
+        } catch (Exception e) {
+            TextoFormatador.alerta("⚠️ Dados do animal incompletos.");
+        }
+
+        try {
+            System.out.printf("  💪 Força: %d | ⚡ Agilidade: %d | 🧠 Inteligência: %d%n",
+                    a.getForca(), a.getAgilidade(), a.getInteligencia());
+        } catch (Exception e) {
+            TextoFormatador.alerta("⚠️ Atributos do animal não encontrados.");
+        }
+
+        // ambiente: usa getTipo() se existir, caso contrário exibe multiplicador de XP
+        try {
+            String tipoAmbiente = null;
+            try { tipoAmbiente = ambiente.getTipo(); } catch (Exception ignored) {}
+            if (tipoAmbiente != null) {
+                TextoFormatador.info(String.format("  🌍 Ambiente: %s (%s)", ambiente.getNome(), tipoAmbiente));
+            } else {
+                TextoFormatador.info(String.format("  🌍 Ambiente: %s (XPx%.2f)", ambiente.getNome(), ambiente.getMultiplicadorXp()));
+            }
+        } catch (Exception e) {
+            TextoFormatador.info("  🌍 Ambiente: " + (ambiente != null ? ambiente.getNome() : "Desconhecido"));
+        }
+
         TextoFormatador.linha();
     }
 
-    public static void mostrarAnimal(Animal a) {
-        TextoFormatador.info("🐾 Animal Encontrado:");
-        System.out.printf("  🐅 %s (%s, Nível %d)%n", a.getEspecie(), a.getIdade(), a.getNivel());
-        System.out.printf("  💪 Força: %d | ⚡ Velocidade: %d | 🧠 Inteligência: %d%n",
-                a.getForca(), a.getVelocidade(), a.getInteligencia());
-        TextoFormatador.linha();
-    }
-
+    // ==============================
+    // Outros métodos de exibição
+    // ==============================
     public static void mostrarResultadoBatalha(String vencedor, String detalhe) {
         TextoFormatador.sucesso("🏆 " + vencedor + " venceu a batalha!");
         TextoFormatador.alerta("📜 " + detalhe);
         TextoFormatador.linha();
     }
 
-    public static void exibirStatusAnimal(Animal animal, Ambiente ambiente) {
+    public static void mostrarAmbiente(Ambiente a) {
+        TextoFormatador.info("🌍 Ambiente Atual:");
+        try {
+            System.out.printf("  %s (%s)%n", a.getNome(), (a.getTipo() != null ? a.getTipo() : "—"));
+        } catch (Exception e) {
+            System.out.printf("  %s%n", a != null ? a.getNome() : "Desconhecido");
+        }
+        TextoFormatador.linha();
     }
 
-    public static void exibirStatusCacador(Cacador cacador) {
+    // pequenos aliases para compatibilidade com código existente
+    public static void mostrarStatusCacador(Cacador c) {
+        exibirStatusCacador(c);
+    }
+    public static void mostrarAnimal(Animal a) {
+        // usa exibirStatusAnimal com ambiente desconhecido (null)
+        if (a != null) {
+            try {
+                TextoFormatador.info("🐾 Animal:");
+                System.out.printf("  %s (Nível %d)%n", a.getNome(), a.getNivel());
+                TextoFormatador.linha();
+            } catch (Exception ex) {
+                exibirStatusAnimal(a, null);
+            }
+        }
     }
 }

@@ -1,55 +1,77 @@
-# 🏹 Caçada Selvagem
+# 🏹 Caçada Selvagem — Versão 2.0
 
-**Caçada Selvagem** é um mini game em Java, onde você assume o papel de um **caçador** que se aventura por ambientes aleatórios e enfrenta diferentes tipos de **animais selvagens**.  
-Cada encontro é único — a vitória depende de estratégia, atributos e um pouco de sorte!
+**Caçada Selvagem** é um mini game em **Java**, onde você assume o papel de um **caçador** que explora ambientes aleatórios, enfrenta **animais selvagens** com diferentes níveis e atributos, e coleta **itens raros** deixados por criaturas épicas.  
+Cada rodada é única — o sucesso depende de **estratégia, atributos e um toque de sorte!** 🍀
 
 ---
 
 ## 🧠 Conceito do Jogo
 
-Você é um caçador em busca de desafios.  
+Você é um caçador em busca de desafios e recompensas.  
 A cada rodada:
-- Um **ambiente aleatório** é gerado (floresta, montanha, deserto, etc.), com efeitos que alteram os atributos dos animais.
-- Um **animal** aparece com idade, espécie e atributos próprios.
-- Você decide se vai **enfrentar** ou **fugir**.
-- Se vencer, ganha **XP** e pode **evoluir seus atributos** ao subir de nível.
 
-Mas cuidado: se escolher o oponente errado, pode ser o fim da caçada! 💀
+- Um **ambiente aleatório** é gerado (floresta, montanha, deserto, pântano, etc.), com efeitos próprios.  
+- Um **animal** surge com espécie, idade e nível únicos.  
+- Você decide se vai **enfrentar**, **fugir**, ou **explorar** mais o ambiente.  
+- Ao vencer, o caçador ganha **XP**, pode **upar** seus atributos e **coletar equipamentos raros**.
+
+Mas cuidado: ambientes hostis e animais lendários podem acabar com sua jornada rapidamente! 💀
 
 ---
 
-## ⚙️ Regras Básicas
+## ⚙️ Mecânica do Sistema
 
 | Tipo | Descrição |
 |------|------------|
-| **Caçador** | Possui atributos de **força**, **velocidade** e **inteligência**, que podem ser aprimorados ao subir de nível. |
-| **Animal** | Cada animal tem uma **espécie** e uma **idade** (*Filhote*, *Adulto*, *Velho*) que afetam seus atributos. |
-| **Ambiente** | Cada ambiente altera as condições da batalha com bônus ou penalidades. |
-| **Combate** | O caçador vence se for superior em pelo menos **2 dos 3 atributos**. |
-| **Evolução** | A cada 100 XP, o caçador sobe de nível e pode escolher um atributo para aprimorar. |
+| **Caçador** | Possui atributos de **força**, **velocidade** e **inteligência**, além de um **nível** e **inventário de equipamentos**. |
+| **Animal** | Cada espécie possui variações por idade e nível, afetando seus atributos base e chance de drop. |
+| **Ambiente** | Define modificadores globais (como bônus de força ou penalidades de agilidade). Ambientes raros podem conter **BOSSes**. |
+| **Item** | Equipamentos e artefatos podem ser encontrados em ambientes épicos ou dropados por animais lendários. |
+| **XP e Níveis** | A cada vitória, o jogador ganha XP proporcional à dificuldade do inimigo e ao ambiente. A progressão é não-linear e adaptativa. |
 
 ---
 
 ## 🌍 Tipos de Ambientes
 
-| Ambiente | Efeito |
-|-----------|---------|
-| 🌲 **Floresta** | Aumenta velocidade dos animais |
-| ⛰️ **Montanha** | Favorece força dos caçadores |
-| 🏜️ **Deserto** | Favorece inteligência dos animais |
-| 🐊 **Pântano** | Reduz velocidade de todos |
+| Ambiente | Efeito | Raridade |
+|-----------|---------|-----------|
+| 🌲 **Floresta** | Aumenta velocidade dos animais | Comum |
+| ⛰️ **Montanha** | Favorece força dos caçadores | Comum |
+| 🏜️ **Deserto** | Favorece inteligência dos animais | Incomum |
+| 🐊 **Pântano** | Reduz velocidade de todos | Raro |
+| 🌋 **Vulcão** | Ambientes extremos com chance de drop lendário | Épico |
 
 ---
 
-## 🦊 Animais
+## 🦊 Animais Selvagens
 
-Espécies possíveis:
-> `Lobo`, `Urso`, `Raposa`, `Águia`, `Cervo`, `Leopardo`
+Espécies base:  
+> `Lobo`, `Urso`, `Raposa`, `Águia`, `Cervo`, `Leopardo`, `Tigre`, `Onça`, `Cobra`, `Javali`
 
-Cada um é gerado aleatoriamente com um estado:
-- 🍼 **Filhote** — mais rápido, porém mais fraco  
-- 💪 **Adulto** — equilibrado  
-- 🧓 **Velho** — mais inteligente, porém lento
+Cada um possui um **estado**:
+
+| Estado | Efeito |
+|---------|---------|
+| 🍼 **Filhote** | Rápido, mas fraco e impulsivo |
+| 💪 **Adulto** | Equilibrado, oponente padrão |
+| 🧓 **Velho** | Mais inteligente e resistente, porém lento |
+| 🔥 **Lendário (BOSS)** | Atributos amplificados e chance de drop de item raro |
+
+---
+
+## ⚔️ Sistema de Itens
+
+Os itens possuem tipos e níveis. Cada tipo adiciona bônus diretos aos atributos do caçador.
+
+| Tipo | Efeito | Drop |
+|------|---------|------|
+| 🪓 **Arma** | +Força | Animais Lendários |
+| 🛡️ **Armadura** | +Resistência | Bosses e Ambientes Raros |
+| 🎯 **Amuleto** | +Inteligência | Ambientes Épicos |
+| 🥾 **Botas** | +Velocidade | Animais Raros |
+| 💎 **Artefato** | Bônus geral e especial | Drop único de Boss |
+
+Limite de itens: 5 por tipo — cada um com níveis independentes.
 
 ---
 
@@ -57,73 +79,16 @@ Cada um é gerado aleatoriamente com um estado:
 
 | Atributo | Função |
 |-----------|--------|
-| **Força** | Influencia diretamente o combate físico |
-| **Velocidade** | Pode garantir vantagem em fugas e emboscadas |
-| **Inteligência** | Ajuda a identificar padrões e vencer animais mais estratégicos |
+| **Força** | Aumenta poder de ataque e resistência física |
+| **Velocidade** | Melhora chance de escapar ou atacar primeiro |
+| **Inteligência** | Afeta decisões estratégicas e bônus de XP |
+| **Resistência** | Reduz penalidades de ambientes hostis |
+| **Sorte** | Aumenta chance de encontrar ambientes e itens raros |
 
 ---
 
 ## 🕹️ Como Jogar
 
-1. Clone o projeto:
-   ```bash
-   git clone https://github.com/seu-usuario/Ca-ador_Proj_miniGame.git
-Abra o projeto no IntelliJ IDEA (ou qualquer IDE Java).
-
-Estrutura recomendada:
-
-css
-Copiar código
-src/
- ├── app/
- │     └── Main.java
- └── model/
-       ├── Cacador.java
-       ├── Animal.java
-       └── Ambiente.java
-Execute o arquivo:
-
-css
-Copiar código
-app/Main.java
-Jogue pelo terminal interativo!
-
-🧩 Estrutura Modular
-O código foi projetado para ser escalável e fácil de expandir:
-
-Classe	Função
-Cacador	Controla atributos, XP e evolução do jogador
-Animal	Define comportamento e variação dos oponentes
-Ambiente	Gera efeitos e modificadores aleatórios
-Main	Controla o loop principal do jogo
-
-✨ Essa arquitetura permite adicionar novos animais, ambientes, ou até sistemas de armas e itens sem reescrever o núcleo do jogo.
-
-🚀 Próximos Passos (Evoluções Planejadas)
-🪓 Sistema de armas e equipamentos
-
-🌙 Modo noturno com efeitos adicionais
-
-🏕️ Acampamentos e descanso entre caçadas
-
-📊 Sistema de ranking e conquistas
-
-🐾 Animais raros e lendários
-
-💻 Tecnologias
-Java 21+
-
-Programação Orientada a Objetos (POO)
-
-Lógica procedural com modularização
-
-Execução via terminal
-
-🧾 Licença
-Este projeto é livre para fins educacionais e de aprendizado.
-Créditos e menções são sempre bem-vindos! ❤️
-
-🎯 Autor
-Desenvolvido por Gabriel
-📅 Versão inicial: Novembro de 2025
-📍 Projeto conceitual - Caçada Selvagem (v1.0)
+### 1️⃣ Clone o projeto:
+```bash
+git clone https://github.com/WeldsonGabriel/Ca-ador_Proj_miniGame.git
