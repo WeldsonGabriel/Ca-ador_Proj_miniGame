@@ -22,6 +22,9 @@ public class Cacador {
     private Item armaduraEquipada;
     private Item itemEspecial;
 
+    // **campo para life-steal**
+    private int vidaRouboPercent = 0; // soma de bônus de itens
+
     private Scanner scanner = new Scanner(System.in);
 
     public Cacador(String nome) {
@@ -75,9 +78,19 @@ public class Cacador {
         boolean venceu = Math.random() < chanceVitoria;
 
         if (venceu) {
+            // calcula dano causado pelo caçador (baseado no poder)
+            int danoCausado = (int) (poderCacador * (0.4 + Math.random() * 0.6));
             int xpGanho = (int) (20 + Math.random() * (poderAnimal + nivel));
             TextoFormatador.sucesso("✅ Vitória! " + nome + " derrotou " + nomeAnimal + " e ganhou " + xpGanho + " XP!");
             ganharExperiencia(xpGanho);
+
+            // **aplica roubo de vida (life-steal)**
+            if (vidaRouboPercent > 0) {
+                int cura = (int) Math.round(danoCausado * (vidaRouboPercent / 100.0));
+                int antes = vidaAtual;
+                vidaAtual = Math.min(vidaMaxima, vidaAtual + cura);
+                TextoFormatador.info("吸 " + " (Roubo de vida) Recuperou " + cura + " HP (" + antes + " -> " + vidaAtual + ")");
+            }
 
             if (Math.random() < 0.25) {
                 int cura = (int) (vidaMaxima * 0.15);
@@ -121,7 +134,8 @@ public class Cacador {
             barra.append(i < blocosCheios ? "▰" : "▱");
         }
 
-        System.out.println("❤️ Vida: [" + barra + "] " + vidaAtual + "/" + vidaMaxima);
+        System.out.println("❤️ Vida: [" + barra + "] " + vidaAtual + "/" + vidaMaxima +
+                (vidaRouboPercent > 0 ? " | LifeSteal: " + vidaRouboPercent + "%" : ""));
     }
 
     // ===========================
@@ -141,9 +155,6 @@ public class Cacador {
         }
     }
 
-    // ===========================
-    // ===== MORTE / RENASCER ====
-    // ===========================
     private void morrer() {
         TextoFormatador.linha();
         TextoFormatador.erro("☠️ GAME OVER — " + nome + " caiu em batalha!");
@@ -160,6 +171,7 @@ public class Cacador {
         nivel = Math.max(1, nivel - 1);
         experiencia = 0;
         vidaAtual = vidaMaxima;
+        vidaRouboPercent = 0; // zera o life-steal ao renascer (se preferir manter, remova esta linha)
         TextoFormatador.sucesso("✨ " + nome + " renasceu no nível " + nivel + " com vida restaurada!");
     }
 
@@ -191,6 +203,41 @@ public class Cacador {
     }
 
     // ===========================
+    // ===== ITENS / INVENTÁRIO ==
+    // ===========================
+    public void adicionarItem(Item item) {
+        if (inventario.size() < 15) {
+            inventario.add(item);
+            TextoFormatador.sucesso("💼 Item adicionado: " + item.getNome());
+        } else {
+            TextoFormatador.alerta("⚠️ Inventário cheio! Considere descartar ou usar um item.");
+        }
+    }
+
+    public void equiparItem(Item item) {
+        if (item.getTipo().equalsIgnoreCase("Arma")) {
+            this.armaEquipada = item;
+        } else if (item.getTipo().equalsIgnoreCase("Armadura")) {
+            this.armaduraEquipada = item;
+        } else if (item.getTipo().equalsIgnoreCase("Item Especial")) {
+            this.itemEspecial = item;
+        }
+
+        // aplica bônus de atributos
+        item.aplicarBonus(this);
+
+        // aplica vidaRoubo (acumula)
+        try {
+            this.vidaRouboPercent += item.getVidaRouboPercent();
+            if (item.getVidaRouboPercent() > 0) {
+                TextoFormatador.info("✨ LifeSteal adquirido: +" + item.getVidaRouboPercent() + "% (total: " + vidaRouboPercent + "%)");
+            }
+        } catch (Exception ignored) {}
+
+        TextoFormatador.sucesso("⚙️ " + nome + " equipou: " + item.getNome());
+    }
+
+    // ===========================
     // ===== UTILITÁRIOS ========
     // ===========================
     public int getPoderTotal() {
@@ -200,6 +247,31 @@ public class Cacador {
         return forca + agilidade + inteligencia + bonus;
     }
 
+    // getters necessários pelo StatusExibidor etc.
+    public String getNome() { return nome; }
+    public int getNivel() { return nivel; }
+    public int getVidaAtual() { return vidaAtual; }
+    public int getVidaMaxima() { return vidaMaxima; }
+    public int getForca() { return forca; }
+    public int getAgilidade() { return agilidade; }
+    public int getInteligencia() { return inteligencia; }
+    public double getExperiencia() { return experiencia; }
+    public double getExperienciaNecessaria() { return experienciaNecessaria; }
+    public List<Item> getItens() { return inventario; }
+    public Item getArmaEquipada() { return armaEquipada; }
+    public Item getArmaduraEquipada() { return armaduraEquipada; }
+    public Item getItemEspecial() { return itemEspecial; }
+
+    // método que o Item.aplicarBonus utiliza
+    public void aumentarAtributos(int bonusForca, int bonusAgilidade, int bonusInteligencia) {
+        this.forca += bonusForca;
+        this.agilidade += bonusAgilidade;
+        this.inteligencia += bonusInteligencia;
+        TextoFormatador.sucesso("💎 Atributos aumentados: +"
+                + bonusForca + " Força, +" + bonusAgilidade + " Agilidade, +" + bonusInteligencia + " Inteligência!");
+    }
+
+    // método de exibição do caçador (mantive simples)
     public void exibirStatus() {
         TextoFormatador.linha();
         System.out.println("🧍‍♂️ Caçador: " + nome);
@@ -209,74 +281,30 @@ public class Cacador {
         TextoFormatador.linha();
     }
 
-    public void aumentarAtributos(int bonusForca, int bonusAgilidade, int bonusInteligencia) {
-        this.forca += bonusForca;
-        this.agilidade += bonusAgilidade;
-        this.inteligencia += bonusInteligencia;
-    }
-
-    public int getVidaAtual() {
-        return vidaAtual;
-    }
-
-    public Object getVidaMaxima() {
-        return vidaMaxima;
-    }
-
     public void receberDano(int danoAnimal) {
         vidaAtual -= danoAnimal;
         vidaAtual = Math.max(0, vidaAtual);
     }
 
-    public void adicionarItem(Item drop) {
-        inventario.add(drop);
-    }
-
-    public int getNivel() {
-        return nivel;
-    }
-
     public void reviver() {
-        this.vidaAtual = this.vidaMaxima;
+        vidaAtual = vidaMaxima;
+        TextoFormatador.sucesso("✨ " + nome + " foi revivido com vida total!");
     }
 
     public void resetarStatus() {
-        this.nivel = 1;
-        this.experiencia = 0;
-        this.experienciaNecessaria = 100;
-        this.forca = 5;
-        this.agilidade = 5;
-        this.inteligencia = 5;
-        this.vidaMaxima = 100;
-        this.vidaAtual = vidaMaxima;
-        this.inventario.clear();
-    }
-
-    public String getNome() {
-        return nome;
-    }
-
-    public Object getExperiencia() {
-        return experiencia;
-    }
-
-    public Object getExperienciaNecessaria() {
-        return experienciaNecessaria;
-    }
-
-    public Object getItens() {
-        return inventario;
-    }
-
-    public Object getForca() {
-        return forca;
-    }
-
-    public Object getAgilidade() {
-        return agilidade;
-    }
-
-    public Object getInteligencia() {
-        return inteligencia;
+        nivel = 1;
+        experiencia = 0;
+        experienciaNecessaria = 100;
+        forca = 5;
+        agilidade = 5;
+        inteligencia = 5;
+        vidaMaxima = 100;
+        vidaAtual = vidaMaxima;
+        inventario.clear();
+        armaEquipada = null;
+        armaduraEquipada = null;
+        itemEspecial = null;
+        vidaRouboPercent = 0;
+        TextoFormatador.sucesso("🔄 " + nome + " teve seu status resetado!");
     }
 }
