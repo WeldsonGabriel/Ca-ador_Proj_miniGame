@@ -1,0 +1,6 @@
+[
+  { "nome": "Rato", "tipo": "normal", "vida": 10 },
+  { "nome": "Lobo", "tipo": "raro", "vida": 30 },
+  { "nome": "Dragao", "tipo": "epico", "vida": 100 }
+]
+

@@ -1,0 +1,6 @@
+[
+  { "nome": "Espada curta", "tipo": "arma", "dano": 5 },
+  { "nome": "Cota de malha", "tipo": "armadura", "defesa": 3 },
+  { "nome": "Elixir", "tipo": "especial" }
+]
+

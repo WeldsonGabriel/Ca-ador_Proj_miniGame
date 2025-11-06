@@ -1,73 +1,73 @@
 package app;
 
-import model.*;
+import model.personagem.Cacador;
+import model.animal.Animal;
+import model.ambiente.Ambiente;
+import model.sistema.Batalha;
+import model.sistema.GeradorRandom;
+import util.TextoFormatador;
 
 import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
+
+        Scanner scanner = new Scanner(System.in);
+        TextoFormatador.linha();
+        System.out.println("🏹 Bem-vindo ao Mundo da Caça Selvagem!");
+        TextoFormatador.linha();
 
         System.out.print("Digite o nome do seu caçador: ");
-        String nome = sc.nextLine();
+        String nome = scanner.nextLine();
+
         Cacador cacador = new Cacador(nome);
+        GeradorRandom gerador = new GeradorRandom();
 
-        boolean jogando = true;
+        TextoFormatador.sucesso("\nCaçador criado com sucesso!");
+        System.out.println(cacador);
 
-        while (jogando) {
-            System.out.println("\n===== 🌲 CAÇADA SELVAGEM =====");
-            System.out.println("1️⃣ Procurar Animal");
-            System.out.println("2️⃣ Mostrar Status do Caçador");
-            System.out.println("3️⃣ Sair");
-            System.out.print("Escolha: ");
-            int opcao = sc.nextInt();
+        boolean continuar = true;
+        while (continuar) {
+            TextoFormatador.linha();
+            System.out.println("🌍 Gerando ambiente...");
+            Ambiente ambiente = gerador.gerarAmbienteAleatorio();
 
+            System.out.println("🐾 Procurando por animais...");
+            Animal animal = gerador.gerarAnimalAleatorio(ambiente);
+
+            TextoFormatador.info("Você está em: " + ambiente.getNome());
+            TextoFormatador.info("Um " + animal.getNome() + " apareceu!");
+
+            TextoFormatador.linha();
+            System.out.println("Escolha uma ação:");
+            System.out.println("[1] Atacar");
+            System.out.println("[2] Fugir");
+            System.out.println("[3] Sair do jogo");
+
+            String opcao = scanner.nextLine();
             switch (opcao) {
-                case 1 -> {
-                    Ambiente ambiente = new Ambiente();
-                    ambiente.mostrarAmbiente();
+                case "1" -> {
+                    Batalha batalha = new Batalha();
+                    boolean venceu = batalha.iniciar(cacador, animal, ambiente);
 
-                    Animal animal = new Animal(ambiente);
-                    animal.mostrarStatus();
-
-                    System.out.println("\nVocê deseja:");
-                    System.out.println("1️⃣ Enfrentar");
-                    System.out.println("2️⃣ Fugir");
-                    int acao = sc.nextInt();
-
-                    if (acao == 1) {
-                        enfrentarAnimal(cacador, animal, ambiente);
+                    if (venceu) {
+                        TextoFormatador.sucesso("🎉 Você venceu o confronto!");
                     } else {
-                        System.out.println("🏃‍♂️ Você fugiu com segurança!");
+                        TextoFormatador.erro("💀 O caçador foi derrotado!");
+                        continuar = false;
                     }
                 }
-
-                case 2 -> cacador.mostrarStatus();
-
-                case 3 -> {
-                    System.out.println("👋 Fim da caçada. Até a próxima!");
-                    jogando = false;
+                case "2" -> TextoFormatador.info("Você fugiu para outro ambiente...");
+                case "3" -> {
+                    TextoFormatador.erro("Encerrando o jogo...");
+                    continuar = false;
                 }
-
-                default -> System.out.println("⚠️ Opção inválida!");
+                default -> TextoFormatador.erro("Opção inválida!");
             }
         }
 
-        sc.close();
-    }
-
-    private static void enfrentarAnimal(Cacador cacador, Animal animal, Ambiente ambiente) {
-        int vantagem = 0;
-
-        if (cacador.getForca() > animal.getForca()) vantagem++;
-        if (cacador.getVelocidade() > animal.getVelocidade()) vantagem++;
-        if (cacador.getInteligencia() > animal.getInteligencia()) vantagem++;
-
-        if (vantagem >= 2) {
-            System.out.printf("🏆 Você derrotou o %s em %s!%n", animal.getEspecie(), ambiente.getNome());
-            cacador.ganharXP(50);
-        } else {
-            System.out.printf("💀 O %s era forte demais no ambiente %s... Você perdeu!%n", animal.getEspecie(), ambiente.getNome());
-        }
+        TextoFormatador.linha();
+        System.out.println("🏁 Fim da caçada, " + cacador.getNome() + "!");
+        scanner.close();
     }
 }
