@@ -122,16 +122,23 @@ public class Batalha {
             String resp = scanner.nextLine().trim().toLowerCase();
             if (resp.equals("s")) {
                 cacador.reviver();
-                TextoFormatador.sucesso("✨ Você reviveu com metade da vida!");
-                return false;
+                TextoFormatador.sucesso("✨ Você reviveu com metade da vida! O jogo continuará de onde parou.");
+                return true;
             } else {
-                TextoFormatador.alerta("🏚️ Fim da jornada. O jogo será reiniciado...");
-                cacador.resetarStatus();
-                return false;
+                TextoFormatador.alerta("🏚️ Deseja encerrar e reiniciar o jogo? (s/n)");
+                String resp2 = scanner.nextLine().trim().toLowerCase();
+                if (resp2.equals("s")) {
+                    TextoFormatador.alerta("🏚️ Fim da jornada. O jogo será reiniciado...");
+                    cacador.resetarStatus();
+                    return false;
+                } else {
+                    TextoFormatador.info("🔁 Voltando ao jogo sem reiniciar. Você pode continuar de onde parou.");
+                    return true;
+                }
             }
         }
 
         TextoFormatador.info("🩹 Você sobreviveu, mas está enfraquecido.");
-        return false;
+        return true;
     }
 }
