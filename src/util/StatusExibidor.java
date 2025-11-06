@@ -8,7 +8,7 @@ public class StatusExibidor {
 
     public static void mostrarCabecalho(String titulo) {
         TextoFormatador.linha();
-        System.out.println(TextoFormatador.cabecalhoFormat(titulo)); // usa método de cabecalho se disponível
+        System.out.println("⚔️  " + titulo.toUpperCase());
         TextoFormatador.linha();
     }
 
@@ -17,6 +17,7 @@ public class StatusExibidor {
     // ==============================
     public static void exibirStatusCacador(Cacador c) {
         TextoFormatador.info("🎯 STATUS DO CAÇADOR:");
+
         try {
             System.out.printf("  🧍 Nome: %s%n", c.getNome());
         } catch (Exception e) {
@@ -39,9 +40,21 @@ public class StatusExibidor {
                     c.getNivel(), c.getExperiencia(), c.getExperienciaNecessaria());
         } catch (Exception ignored) {}
 
+        // 🔹 Exibição de itens (verificação segura)
         try {
-            var itens = c.getItens();
-            System.out.println("  🎒 Itens: " + (itens == null || itens.isEmpty() ? "Nenhum" : itens));
+            Object itensObj = c.getItens();
+            if (itensObj instanceof java.util.Collection<?> itens && !itens.isEmpty()) {
+                System.out.println("  🎒 Itens:");
+                for (Object o : itens) {
+                    if (o instanceof model.item.Item item) {
+                        System.out.println("     - " + item.getNome() + (item.isRaro() ? " ✨" : ""));
+                    } else {
+                        System.out.println("     - " + o);
+                    }
+                }
+            } else {
+                System.out.println("  🎒 Itens: Nenhum");
+            }
         } catch (Exception e) {
             System.out.println("  🎒 Itens: Indisponível");
         }
@@ -54,7 +67,7 @@ public class StatusExibidor {
     // ==============================
     public static void exibirStatusAnimal(Animal a, Ambiente ambiente) {
         TextoFormatador.info("🐾 ANIMAL ENCONTRADO:");
-        // usa getNome() e getIdade() conforme sua implementação atual de Animal
+
         try {
             System.out.printf("  🐅 Nome: %s | Idade: %s | Nível: %d%n",
                     a.getNome(), a.getIdade(), a.getNivel());
@@ -69,7 +82,6 @@ public class StatusExibidor {
             TextoFormatador.alerta("⚠️ Atributos do animal não encontrados.");
         }
 
-        // ambiente: usa getTipo() se existir, caso contrário exibe multiplicador de XP
         try {
             String tipoAmbiente = null;
             try { tipoAmbiente = ambiente.getTipo(); } catch (Exception ignored) {}
@@ -104,12 +116,14 @@ public class StatusExibidor {
         TextoFormatador.linha();
     }
 
-    // pequenos aliases para compatibilidade com código existente
+    // ==============================
+    // Aliases para compatibilidade
+    // ==============================
     public static void mostrarStatusCacador(Cacador c) {
         exibirStatusCacador(c);
     }
+
     public static void mostrarAnimal(Animal a) {
-        // usa exibirStatusAnimal com ambiente desconhecido (null)
         if (a != null) {
             try {
                 TextoFormatador.info("🐾 Animal:");

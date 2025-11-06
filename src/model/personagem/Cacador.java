@@ -2,13 +2,10 @@ package model.personagem;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 import model.item.Item;
 import util.TextoFormatador;
 
-/**
- * Representa o caçador controlado pelo jogador.
- * Possui atributos de combate, inventário e sistema de progressão.
- */
 public class Cacador {
     private String nome;
     private int nivel;
@@ -25,9 +22,8 @@ public class Cacador {
     private Item armaduraEquipada;
     private Item itemEspecial;
 
-    // ===========================
-    // ===== CONSTRUTOR =========
-    // ===========================
+    private Scanner scanner = new Scanner(System.in);
+
     public Cacador(String nome) {
         this.nome = nome;
         this.nivel = 1;
@@ -39,6 +35,132 @@ public class Cacador {
         this.vidaMaxima = 100;
         this.vidaAtual = vidaMaxima;
         this.inventario = new ArrayList<>();
+    }
+
+    // ===========================
+    // ===== SISTEMA DE COMBATE ==
+    // ===========================
+    public void iniciarBatalha(String nomeAnimal, int poderAnimal) {
+        TextoFormatador.linha();
+        TextoFormatador.info("🐾 " + nome + " encontrou um " + nomeAnimal + "!");
+        TextoFormatador.info("⚔️ Iniciando batalha...");
+
+        while (vidaAtual > 0) {
+            boolean venceu = atacar(nomeAnimal, poderAnimal);
+            if (venceu) {
+                TextoFormatador.sucesso("🏆 " + nome + " venceu a batalha contra " + nomeAnimal + "!");
+                exibirBarraVida();
+                perguntarNovaBatalha();
+                break;
+            } else if (vidaAtual <= 0) {
+                TextoFormatador.erro("💀 " + nome + " foi derrotado pelo " + nomeAnimal + "...");
+                morrer();
+                break;
+            }
+
+            try { Thread.sleep(1200); } catch (InterruptedException ignored) {}
+        }
+    }
+
+    public boolean atacar(String nomeAnimal, int poderAnimal) {
+        int poderCacador = getPoderTotal();
+        double chanceVitoria = (double) poderCacador / (poderCacador + poderAnimal);
+
+        TextoFormatador.info("\n🗡️ " + nome + " ataca o " + nomeAnimal + "!");
+        TextoFormatador.info("⚖️ Chance de vitória: " + (int) (chanceVitoria * 100) + "%");
+
+        animarBatalha();
+        exibirBarraVida();
+
+        boolean venceu = Math.random() < chanceVitoria;
+
+        if (venceu) {
+            int xpGanho = (int) (20 + Math.random() * (poderAnimal + nivel));
+            TextoFormatador.sucesso("✅ Vitória! " + nome + " derrotou " + nomeAnimal + " e ganhou " + xpGanho + " XP!");
+            ganharExperiencia(xpGanho);
+
+            if (Math.random() < 0.25) {
+                int cura = (int) (vidaMaxima * 0.15);
+                vidaAtual = Math.min(vidaMaxima, vidaAtual + cura);
+                TextoFormatador.info("❤️ Recuperou " + cura + " de vida após a batalha!");
+            }
+            return true;
+        } else {
+            int danoBase = 10 + (int) (Math.random() * poderAnimal);
+            int danoFinal = Math.max(5, danoBase - (agilidade / 3));
+            vidaAtual -= danoFinal;
+            vidaAtual = Math.max(0, vidaAtual);
+
+            TextoFormatador.alerta("⚠️ Sofreu " + danoFinal + " de dano!");
+            exibirBarraVida();
+            return false;
+        }
+    }
+
+    // ===========================
+    // ===== ANIMAÇÃO ============
+    // ===========================
+    private void animarBatalha() {
+        String[] frames = {"⚔️", "💥", "🩸", "🔥"};
+        for (String f : frames) {
+            System.out.print("\r" + f + " Lutando...");
+            try { Thread.sleep(300); } catch (InterruptedException ignored) {}
+        }
+        System.out.println();
+    }
+
+    // ===========================
+    // ===== BARRA DE VIDA =======
+    // ===========================
+    private void exibirBarraVida() {
+        int totalBlocos = 20;
+        int blocosCheios = (int) ((vidaAtual / (double) vidaMaxima) * totalBlocos);
+        StringBuilder barra = new StringBuilder();
+
+        for (int i = 0; i < totalBlocos; i++) {
+            barra.append(i < blocosCheios ? "▰" : "▱");
+        }
+
+        System.out.println("❤️ Vida: [" + barra + "] " + vidaAtual + "/" + vidaMaxima);
+    }
+
+    // ===========================
+    // ===== REINICIAR ===========
+    // ===========================
+    private void perguntarNovaBatalha() {
+        System.out.print("\n⚔️ Deseja iniciar outra batalha? (s/n): ");
+        String resposta = scanner.nextLine().trim().toLowerCase();
+
+        if (resposta.equals("s")) {
+            System.out.print("🐗 Escolha um inimigo (nome): ");
+            String nomeAnimal = scanner.nextLine();
+            int poderAnimal = 20 + (int) (Math.random() * 60);
+            iniciarBatalha(nomeAnimal, poderAnimal);
+        } else {
+            TextoFormatador.info("🌿 " + nome + " decide descansar por enquanto...");
+        }
+    }
+
+    // ===========================
+    // ===== MORTE / RENASCER ====
+    // ===========================
+    private void morrer() {
+        TextoFormatador.linha();
+        TextoFormatador.erro("☠️ GAME OVER — " + nome + " caiu em batalha!");
+        TextoFormatador.alerta("💤 Revivendo...");
+
+        try { Thread.sleep(2000); } catch (InterruptedException ignored) {}
+
+        reiniciarAposMorte();
+        exibirBarraVida();
+        perguntarNovaBatalha();
+    }
+
+    private void reiniciarAposMorte() {
+        nivel = Math.max(1, nivel - 1);
+        experiencia = 0;
+        vidaAtual = vidaMaxima;
+        TextoFormatador.sucesso("✨ " + nome + " renasceu no nível " + nivel + " com vida restaurada!");
     }
 
     // ===========================
@@ -69,14 +191,8 @@ public class Cacador {
     }
 
     // ===========================
-    // ===== ATRIBUTOS ==========
+    // ===== UTILITÁRIOS ========
     // ===========================
-    public void aumentarAtributos(int f, int a, int i) {
-        this.forca += f;
-        this.agilidade += a;
-        this.inteligencia += i;
-    }
-
     public int getPoderTotal() {
         int bonus = 0;
         if (armaEquipada != null) bonus += armaEquipada.isRaro() ? 5 : 2;
@@ -84,141 +200,40 @@ public class Cacador {
         return forca + agilidade + inteligencia + bonus;
     }
 
-    // ===========================
-    // ===== INVENTÁRIO =========
-    // ===========================
-    public void adicionarItem(Item item) {
-        if (inventario.size() < 15) {
-            inventario.add(item);
-            TextoFormatador.sucesso("💼 Item adicionado: " + item.getNome());
-        } else {
-            TextoFormatador.alerta("⚠️ Inventário cheio! Considere descartar ou usar um item.");
-        }
-    }
-
-    public void equiparItem(Item item) {
-        if (item.getTipo().equalsIgnoreCase("Arma")) {
-            this.armaEquipada = item;
-        } else if (item.getTipo().equalsIgnoreCase("Armadura")) {
-            this.armaduraEquipada = item;
-        } else if (item.getTipo().equalsIgnoreCase("Item Especial")) {
-            this.itemEspecial = item;
-        }
-
-        item.aplicarBonus(this);
-        TextoFormatador.sucesso("⚙️ " + nome + " equipou: " + item.getNome());
-    }
-
-    // ===========================
-// ===== SISTEMA DE COMBATE ==
-// ===========================
-    public boolean atacar(String nomeAnimal, int poderAnimal) {
-        int poderCacador = getPoderTotal();
-        double chanceVitoria = (double) poderCacador / (poderCacador + poderAnimal);
-
-        TextoFormatador.linha();
-        TextoFormatador.info("🐾 Enfrentando " + nomeAnimal + "...");
-        TextoFormatador.info("⚔️ Poder do caçador: " + poderCacador + " | 🦴 Poder do animal: " + poderAnimal);
-
-        boolean venceu = Math.random() < chanceVitoria;
-
-        if (venceu) {
-            int xpGanho = (int) (20 + Math.random() * (poderAnimal + nivel));
-            TextoFormatador.sucesso("✅ Vitória! " + nome + " derrotou " + nomeAnimal + " e ganhou " + xpGanho + " XP!");
-            ganharExperiencia(xpGanho);
-
-            // Pequena chance de recuperar vida após vitória
-            if (Math.random() < 0.25) {
-                int cura = (int) (vidaMaxima * 0.15);
-                vidaAtual = Math.min(vidaMaxima, vidaAtual + cura);
-                TextoFormatador.info("❤️ Recuperou " + cura + " de vida após a batalha!");
-            }
-
-            return true;
-        } else {
-            int danoBase = 10 + (int) (Math.random() * poderAnimal);
-            int danoFinal = Math.max(5, danoBase - (agilidade / 3)); // agilidade reduz dano
-            vidaAtual -= danoFinal;
-
-            if (vidaAtual > 0) {
-                TextoFormatador.alerta("⚠️ Derrota! Sofreu " + danoFinal + " de dano. Vida atual: " + vidaAtual + "/" + vidaMaxima);
-            } else {
-                vidaAtual = 0;
-                TextoFormatador.erro("💀 " + nome + " foi derrotado em batalha!");
-                morrer();
-            }
-
-            return false;
-        }
-    }
-
-    // ===========================
-// ===== SISTEMA DE MORTE ====
-// ===========================
-    private void morrer() {
-        TextoFormatador.linha();
-        TextoFormatador.erro("☠️ GAME OVER — " + nome + " caiu em batalha!");
-        TextoFormatador.alerta("💤 Revivendo...");
-
-        try {
-            Thread.sleep(2000); // pausa simbólica de 2 segundos
-        } catch (InterruptedException ignored) {}
-
-        reiniciarAposMorte();
-    }
-
-    // ===========================
-// ===== REINICIAR ===========
-    private void reiniciarAposMorte() {
-        nivel = Math.max(1, nivel - 1); // perde 1 nível
-        experiencia = 0;
-        vidaAtual = vidaMaxima;
-        TextoFormatador.sucesso("✨ " + nome + " renasceu no nível " + nivel + " com vida restaurada!");
-    }
-
-
-    // ===========================
-    // ===== STATUS ==============
-    // ===========================
     public void exibirStatus() {
         TextoFormatador.linha();
         System.out.println("🧍‍♂️ Caçador: " + nome);
         System.out.println("⭐ Nível: " + nivel + " | XP: " + (int) experiencia + "/" + (int) experienciaNecessaria);
         System.out.println("💪 Força: " + forca + " | ⚡ Agilidade: " + agilidade + " | 🧠 Inteligência: " + inteligencia);
-        System.out.println("❤️ Vida: " + vidaAtual + "/" + vidaMaxima);
-        System.out.println("⚔️ Arma: " + (armaEquipada != null ? armaEquipada.getNome() : "Nenhuma"));
-        System.out.println("🛡️ Armadura: " + (armaduraEquipada != null ? armaduraEquipada.getNome() : "Nenhuma"));
-        System.out.println("🔮 Item Especial: " + (itemEspecial != null ? itemEspecial.getNome() : "Nenhum"));
+        exibirBarraVida();
         TextoFormatador.linha();
     }
 
-    // ===========================
-    // ===== GETTERS ============
-    // ===========================
-    public String getNome() { return nome; }
-    public int getNivel() { return nivel; }
-    public int getVidaAtual() { return vidaAtual; }
-    public int getVidaMaxima() { return vidaMaxima; }
+    public void aumentarAtributos(int bonusForca, int bonusAgilidade, int bonusInteligencia) {
+        this.forca += bonusForca;
+        this.agilidade += bonusAgilidade;
+        this.inteligencia += bonusInteligencia;
+    }
 
-    public int getForca() { return forca; }
-    public int getAgilidade() { return agilidade; }
-    public int getInteligencia() { return inteligencia; }
+    public int getVidaAtual() {
+        return vidaAtual;
+    }
 
-    public double getExperiencia() { return experiencia; }
-    public double getExperienciaNecessaria() { return experienciaNecessaria; }
-
-    public List<Item> getItens() { return inventario; }
-
-    public Item getArmaEquipada() { return armaEquipada; }
-    public Item getArmaduraEquipada() { return armaduraEquipada; }
-    public Item getItemEspecial() { return itemEspecial; }
-
-    public Object getXpAtual() {
-        return experiencia;
+    public Object getVidaMaxima() {
+        return vidaMaxima;
     }
 
     public void receberDano(int danoAnimal) {
-        this.vidaAtual -= danoAnimal;
+        vidaAtual -= danoAnimal;
+        vidaAtual = Math.max(0, vidaAtual);
+    }
+
+    public void adicionarItem(Item drop) {
+        inventario.add(drop);
+    }
+
+    public int getNivel() {
+        return nivel;
     }
 
     public void reviver() {
@@ -235,8 +250,33 @@ public class Cacador {
         this.vidaMaxima = 100;
         this.vidaAtual = vidaMaxima;
         this.inventario.clear();
-        this.armaEquipada = null;
-        this.armaduraEquipada = null;
-        this.itemEspecial = null;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public Object getExperiencia() {
+        return experiencia;
+    }
+
+    public Object getExperienciaNecessaria() {
+        return experienciaNecessaria;
+    }
+
+    public Object getItens() {
+        return inventario;
+    }
+
+    public Object getForca() {
+        return forca;
+    }
+
+    public Object getAgilidade() {
+        return agilidade;
+    }
+
+    public Object getInteligencia() {
+        return inteligencia;
     }
 }
